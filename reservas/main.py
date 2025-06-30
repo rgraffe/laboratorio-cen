@@ -4,6 +4,7 @@ from db import create_db_and_tables, get_session
 from sqlmodel import select
 from typing import Annotated
 from sqlmodel import Session
+from filters import ReservaFilterParams
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -23,12 +24,23 @@ def read_root():
 
 @app.get("/reservas/", response_model=list[ReservaPublic])
 def get_reservas(
-    session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    session: SessionDep, filter_query: Annotated[ReservaFilterParams, Query()]
 ):
-    """Obtener listado de reservas con paginación."""
-    reservas = session.exec(select(Reserva).offset(offset).limit(limit)).all()
+    """Obtener listado de reservas con paginación y filtrado."""
+    query = (
+        select(Reserva)
+        .order_by(filter_query.order_by)
+        .offset(filter_query.offset)
+        .limit(filter_query.limit)
+    )
+
+    # Aplicar filtros
+    if filter_query.status:
+        query = query.where(Reserva.status == filter_query.status)
+    if filter_query.id_laboratorio:
+        query = query.where(Reserva.id_ubicacion == filter_query.id_laboratorio)
+
+    reservas = session.exec(query).all()
     return reservas
 
 
@@ -51,12 +63,12 @@ def create_reserva(reserva: ReservaBase, session: SessionDep):
 
 
 @app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)
-def update_hero(reserva_id: int, reserva: ReservaUpdate, session: SessionDep):
+def update_reserva(reserva_id: int, reserva: ReservaUpdate, session: SessionDep):
     reserva_db = session.get(Reserva, reserva_id)
     if not reserva_db:
-        raise HTTPException(status_code=404, detail="Hero not found")
-    hero_data = reserva.model_dump(exclude_unset=True)
-    reserva_db.sqlmodel_update(hero_data)
+        raise HTTPException(status_code=404, detail="Reserva no encontrada")
+    reserva_data = reserva.model_dump(exclude_unset=True)
+    reserva_db.sqlmodel_update(reserva_data)
     session.add(reserva_db)
     session.commit()
     session.refresh(reserva_db)
