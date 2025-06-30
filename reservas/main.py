@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, Query, HTTPException
-from db import create_db_and_tables, get_session, Reserva
+from models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
+from db import create_db_and_tables, get_session
 from sqlmodel import select
 from typing import Annotated
 from sqlmodel import Session
@@ -20,7 +21,7 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/reservas/")
+@app.get("/reservas/", response_model=list[ReservaPublic])
 def get_reservas(
     session: SessionDep,
     offset: int = 0,
@@ -31,7 +32,7 @@ def get_reservas(
     return reservas
 
 
-@app.get("/reservas/{reserva_id}")
+@app.get("/reservas/{reserva_id}", response_model=ReservaPublic)
 def read_hero(reserva_id: int, session: SessionDep):
     """Obtener una reserva por su ID."""
     reserva = session.get(Reserva, reserva_id)
@@ -40,8 +41,8 @@ def read_hero(reserva_id: int, session: SessionDep):
     return reserva
 
 
-@app.post("/reservas/")
-def create_reserva(reserva: Reserva, session: SessionDep):
+@app.post("/reservas/", response_model=ReservaPublic)
+def create_reserva(reserva: ReservaBase, session: SessionDep):
     """Crear una nueva reserva."""
     session.add(reserva)
     session.commit()
@@ -49,17 +50,14 @@ def create_reserva(reserva: Reserva, session: SessionDep):
     return reserva
 
 
-@app.put("/reservas/{reserva_id}")
-def update_reserva(reserva_id: int, reserva: Reserva, session: SessionDep):
-    """Actualizar una reserva existente."""
-    existing_reserva = session.get(Reserva, reserva_id)
-    if not existing_reserva:
-        raise HTTPException(status_code=404, detail="Reserva no encontrada")
-
-    for key, value in reserva.dict(exclude_unset=True).items():
-        setattr(existing_reserva, key, value)
-
-    session.add(existing_reserva)
+@app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)
+def update_hero(reserva_id: int, reserva: ReservaUpdate, session: SessionDep):
+    reserva_db = session.get(Reserva, reserva_id)
+    if not reserva_db:
+        raise HTTPException(status_code=404, detail="Hero not found")
+    hero_data = reserva.model_dump(exclude_unset=True)
+    reserva_db.sqlmodel_update(hero_data)
+    session.add(reserva_db)
     session.commit()
-    session.refresh(existing_reserva)
-    return existing_reserva
+    session.refresh(reserva_db)
+    return reserva_db
