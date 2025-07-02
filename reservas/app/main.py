@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends, Query, HTTPException
-from models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
-from db import create_db_and_tables, get_session
+from app.models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
+from app.db import create_db_and_tables, get_session
+from app.filters import ReservaFilterParams
 from sqlmodel import select
 from typing import Annotated
 from sqlmodel import Session
-from filters import ReservaFilterParams
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
