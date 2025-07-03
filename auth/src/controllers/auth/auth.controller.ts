@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { findUserByEmail, validatePassword } from './user.service';
 import { AuthError, login } from './auth.service';
 
 export const loginHandler = async (

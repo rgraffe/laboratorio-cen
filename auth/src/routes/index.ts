@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import authRoutes from '../auth.routes';
+import authRoutes from '../controllers/auth/auth.routes';
 const router = Router();
 
 router.use('/login', authRoutes);

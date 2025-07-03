@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import routes from './auth/routes';
+import routes from './routes';
 import { db } from './db';
 // Cargar variables de entorno
 dotenv.config();

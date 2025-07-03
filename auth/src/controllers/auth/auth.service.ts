@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { authParams } from '../types/types';
-import { db } from '../db';
-import { usuarios } from '../tables/usuarios';
+import { authParams } from '../../types/types';
+import { db } from '../../db';
+import { usuarios } from '../../tables/usuarios';
 import { eq } from 'drizzle-orm';
-import { comparePassword } from '../utils/password';
+import { comparePassword } from '../../utils/password';
 
 export class AuthError extends Error {
   constructor(message: string) {
