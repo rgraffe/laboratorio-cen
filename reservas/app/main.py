@@ -45,7 +45,7 @@ def get_reservas(
 
 
 @app.get("/reservas/{reserva_id}", response_model=ReservaPublic)
-def read_hero(reserva_id: int, session: SessionDep):
+def read_reserva(reserva_id: int, session: SessionDep):
     """Obtener una reserva por su ID."""
     reserva = session.get(Reserva, reserva_id)
     if not reserva:
