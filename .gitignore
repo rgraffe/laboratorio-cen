@@ -1,0 +1,23 @@
+# Ignorar todo por defecto.
+*
+
+# Primero, permitir los directorios que contienen nuestros archivos.
+# Esto es necesario para que Git pueda buscar dentro de ellos.
+!/gke-infra/
+!/k8s-deployments/
+
+# Ahora, permitir explícitamente solo los archivos que queremos.
+!.gitignore
+
+# Para gke-infra: ignorar todo su contenido...
+/gke-infra/*
+# ...excepto este archivo.
+!/gke-infra/main.tf
+
+# Para k8s-deployments: ignorar todo su contenido...
+/k8s-deployments/*
+# ...excepto estos archivos.
+!/k8s-deployments/hpa.tf
+!/k8s-deployments/ingress.tf
+!/k8s-deployments/main.tf
+!/k8s-deployments/reservas_horarios_service.tf
