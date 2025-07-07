@@ -14,6 +14,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.use('/', routes);
+
 (async () => {
   try {
     await db.execute('SELECT 1');
