@@ -8,9 +8,8 @@ from sqlmodel import Session
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
-
-app = FastAPI()
-
+# Agrega root_path para que FastAPI sepa que está detrás de un prefijo en el Ingress
+app = FastAPI(root_path="/api/reservas")
 
 @app.on_event("startup")
 def on_startup():
