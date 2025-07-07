@@ -1,5 +1,6 @@
 import { serial, varchar, pgTable } from 'drizzle-orm/pg-core';
 import { pgEnum } from 'drizzle-orm/pg-core';
+import { laboratorios } from './laboratorios';
 
 export const estadoEnum = pgEnum('Estado', [
   'Operativo',
@@ -12,4 +13,7 @@ export const equipos = pgTable('Equipos', {
   Nombre: varchar('Nombre', { length: 100 }).notNull(),
   Modelo: varchar('Modelo', { length: 150 }).notNull(),
   Estado: estadoEnum('Estado').notNull(),
+  IdLaboratorio: serial('IdLaboratorio')
+    .notNull()
+    .references(() => laboratorios.IdLaboratorio),
 });
