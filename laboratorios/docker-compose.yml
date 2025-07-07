@@ -1,0 +1,32 @@
+services:
+  laboratorios:
+    build: .
+    container_name: laboratorios-service
+    ports:
+      - '3001:3000'
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:1234@db:5432/laboratoriosdb
+      - SSL=false
+      - PGUSER=postgres
+      - PGPASSWORD=1234
+      - PGSERVER=db
+      - PGPORT=5432
+      - PGNAME=laboratoriosdb
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: laboratorios-db
+    environment:
+      POSTGRES_DB: laboratoriosdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
