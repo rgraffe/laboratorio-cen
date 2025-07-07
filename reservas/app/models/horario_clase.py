@@ -60,6 +60,12 @@ class HorarioClaseRead(HorarioClaseBase):
 class HorarioClaseReadWithSesiones(HorarioClaseRead):
     sesiones: List[SesionClaseRead] = []
 
+
+# Esquema para crear una sesión (hereda de la base)
+class SesionClaseCreate(SesionClaseBase):
+    pass
+
+
 # Esquema para crear una sesión DENTRO de un horario
 class SesionClaseForCreate(SQLModel):
     dia_semana: DiaSemana
