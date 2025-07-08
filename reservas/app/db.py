@@ -2,7 +2,7 @@ from sqlmodel import Session, SQLModel, create_engine
 import os
 
 postgres_url = os.getenv(
-    "DB_URL", "postgresql://username:password@localhost:5432/database_name"
+    "DATABASE_URL", "postgresql://username:password@localhost:5432/database_name"
 )
 
 engine = create_engine(postgres_url)
