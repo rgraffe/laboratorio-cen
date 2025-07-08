@@ -7,7 +7,7 @@ until nc -z db 5432; do
 done
 
 echo "Ejecutando migraciones de Drizzle..."
-npx drizzle-kit push
+./node_modules/.bin/drizzle-kit push
 
 echo "Iniciando la aplicación..."
 npm run dev

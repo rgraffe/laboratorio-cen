@@ -3,6 +3,7 @@ FROM node:20
 WORKDIR /app
 
 COPY package*.json ./
+ENV NODE_ENV=development
 RUN npm install
 
 # Instala netcat para wait-for-db
