@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  # Servicio de FastAPI de reservas de laboratorio
+  reservas-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Variables de entorno para la conexión a la base de datos
+      DATABASE_URL: postgresql://user:password@db:5432/reservations_db
+    depends_on:
+      - db
+    volumes:
+      # Monta el código fuente para que los cambios en tu código se reflejen
+      # sin necesidad de reconstruir la imagen
+      - ./app:/app/app
+    networks:
+      - reservas-network
+
+  # Servicio de PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: reservations_db
+    volumes:
+      # Los datos se guardarán en un volumen Docker llamado 'db_data'.
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - reservas-network
+
+# Define las redes para que los servicios puedan comunicarse entre sí
+networks:
+  reservas-network:
+    driver: bridge
+
+# Define los volúmenes para la persistencia de datos
+volumes:
+  db_data:

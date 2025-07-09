@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  auth-app:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@auth-db:5432/authdb
+    depends_on:
+      - auth-db
+    restart: always
+    volumes:
+      - ./app:/app/app
+    networks:
+      - auth-network
+
+  auth-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: authdb
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
+    driver: bridge
+
+volumes:
+  auth_db_data:
