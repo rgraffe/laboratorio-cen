@@ -29,6 +29,7 @@ class Token(BaseModel):
     token_type: str
 
 class UserOut(BaseModel):
+    id: int
     email: str
     name: str
     type: UserType
@@ -37,8 +38,14 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class UserCreate(BaseModel):
+    email: str
+    name: str
+    password: str
+    type: UserType
+
 @app.post("/register", response_model=UserOut)
-def register(user: UserDB, session: Session = Depends(get_session)):
+def register(user: UserCreate, session: Session = Depends(get_session)):
     statement = select(UserDB).where(UserDB.email == user.email)
     existing_user = session.exec(statement).first()
     if existing_user:
@@ -48,7 +55,7 @@ def register(user: UserDB, session: Session = Depends(get_session)):
     session.add(user_db)
     session.commit()
     session.refresh(user_db)
-    return UserOut(email=user_db.email, name=user_db.name, type=user_db.type)
+    return UserOut(id=user_db.id, email=user_db.email, name=user_db.name, type=user_db.type)
 
 @app.post("/login", response_model=Token)
 def login(data: LoginRequest, session: Session = Depends(get_session)):
@@ -73,12 +80,12 @@ def read_users_me(token: str = Depends(oauth2_scheme), session: Session = Depend
         user_db = session.exec(statement).first()
         if user_db is None:
             raise HTTPException(status_code=401, detail="User not found")
-        return UserOut(email=user_db.email, name=user_db.name, type=user_db.type)
+        return UserOut(id=user_db.id, email=user_db.email, name=user_db.name, type=user_db.type)
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 @app.get("/users", response_model=list[UserOut])
 def get_users(session: Session = Depends(get_session)):
     users_db = session.exec(select(UserDB)).all()
-    users = [UserOut(email=u.email, name=u.name, type=u.type) for u in users_db]
+    users = [UserOut(id=u.id, email=u.email, name=u.name, type=u.type) for u in users_db]
     return users
