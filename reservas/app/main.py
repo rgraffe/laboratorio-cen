@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from app.models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
 from app.models.horario_clase import (
     HorarioClase,
@@ -17,18 +18,27 @@ from app.db import create_db_and_tables, get_session
 from app.filters import (
     ReservaFilterParams,
     HorarioClaseFilterParams,
-    # SesionClaseFilterParams,
 )
+from app.models.equipos_reserva import EquiposReservaBase
 from app.constants import StatusReserva
 from sqlmodel import select
 from typing import Annotated, List
 from sqlmodel import Session
+import httpx
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
 # Agrega root_path para que FastAPI sepa que está detrás de un prefijo en el Ingress
 app = FastAPI(root_path="/api/reservas")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -63,7 +73,31 @@ def get_reservas(
         query = query.where(Reserva.id_ubicacion == filter_query.id_laboratorio)
 
     reservas = session.exec(query).all()
-    return reservas
+
+    # Obtener equipos para cada reserva y sus detalles
+    reservas_public = []
+    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
+    for reserva in reservas:
+        equipos_ids = session.exec(
+            select(EquiposReservaBase.id_equipo).where(
+                EquiposReservaBase.id_reserva == reserva.id
+            )
+        ).all()
+        equipos_detalles = []
+        for id_equipo in equipos_ids:
+            try:
+                with httpx.Client() as client:
+                    r = client.get(f"{LABS_URL}{id_equipo}")
+                    if r.status_code == 200:
+                        equipos_detalles.append(r.json())
+            except Exception:
+                pass
+        reserva_dict = (
+            reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
+        )
+        reserva_dict["equipos"] = equipos_detalles
+        reservas_public.append(ReservaPublic(**reserva_dict))
+    return reservas_public
 
 
 @app.get("/reservas/{reserva_id}", response_model=ReservaPublic)
@@ -72,7 +106,27 @@ def read_reserva(reserva_id: int, session: SessionDep):
     reserva = session.get(Reserva, reserva_id)
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
-    return reserva
+
+    equipos_ids = session.exec(
+        select(EquiposReservaBase.id_equipo).where(
+            EquiposReservaBase.id_reserva == reserva.id
+        )
+    ).all()
+    equipos_detalles = []
+    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
+    for id_equipo in equipos_ids:
+        try:
+            with httpx.Client() as client:
+                r = client.get(f"{LABS_URL}{id_equipo}")
+                if r.status_code == 200:
+                    equipos_detalles.append(r.json())
+        except Exception:
+            pass
+    reserva_dict = (
+        reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
+    )
+    reserva_dict["equipos"] = equipos_detalles
+    return ReservaPublic(**reserva_dict)
 
 
 @app.post("/reservas/", response_model=ReservaPublic)
@@ -125,7 +179,30 @@ def create_reserva(reserva: ReservaBase, session: SessionDep):
     session.add(db_reserva)
     session.commit()
     session.refresh(db_reserva)
-    return db_reserva
+
+    # Guardar equipos asociados a la reserva
+    equipos_ids = reserva.equipos or []
+    for id_equipo in equipos_ids:
+        if db_reserva.id:
+            equipo_reserva = EquiposReservaBase(
+                id_reserva=db_reserva.id, id_equipo=id_equipo
+            )
+            session.add(equipo_reserva)
+    session.commit()
+
+    # Obtener equipos para la respuesta
+    equipos = session.exec(
+        select(EquiposReservaBase.id_equipo).where(
+            EquiposReservaBase.id_reserva == db_reserva.id
+        )
+    ).all()
+    reserva_dict = (
+        db_reserva.model_dump()
+        if hasattr(db_reserva, "model_dump")
+        else db_reserva.dict()
+    )
+    reserva_dict["equipos"] = equipos
+    return ReservaPublic(**reserva_dict)
 
 
 @app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)

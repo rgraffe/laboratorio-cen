@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlmodel import Field, SQLModel
+from typing import Optional
 
 
 class ReservaBase(SQLModel):
@@ -8,7 +9,6 @@ class ReservaBase(SQLModel):
     fecha_fin: datetime = Field()
     id_usuario: int = Field()
     id_ubicacion: int = Field(index=True)
-    id_equipo: int | None = Field(default=None)
     status: str = Field(
         default="pending", sa_column_kwargs={"server_default": "pending"}
     )
@@ -20,6 +20,7 @@ class Reserva(ReservaBase, table=True):
 
 class ReservaPublic(ReservaBase):
     id: int
+    equipos: Optional[list] = None
 
 
 class ReservaUpdate(ReservaBase):
@@ -29,5 +30,4 @@ class ReservaUpdate(ReservaBase):
     fecha_fin: datetime | None = None
     id_usuario: None = None
     id_ubicacion: None = None
-    id_equipo: None = None
     status: str | None = None
