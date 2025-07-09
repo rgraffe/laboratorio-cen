@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlmodel import Field, SQLModel
-from typing import List, Optional
+from typing import Optional
 
 
 class ReservaBase(SQLModel):
@@ -12,7 +12,6 @@ class ReservaBase(SQLModel):
     status: str = Field(
         default="pending", sa_column_kwargs={"server_default": "pending"}
     )
-    equipos: Optional[List[int]] = None
 
 
 class Reserva(ReservaBase, table=True):
@@ -21,7 +20,7 @@ class Reserva(ReservaBase, table=True):
 
 class ReservaPublic(ReservaBase):
     id: int
-    equipos: List[int] = []
+    equipos: Optional[list] = None
 
 
 class ReservaUpdate(ReservaBase):

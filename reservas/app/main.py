@@ -24,6 +24,7 @@ from app.constants import StatusReserva
 from sqlmodel import select
 from typing import Annotated, List
 from sqlmodel import Session
+import httpx
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -73,18 +74,28 @@ def get_reservas(
 
     reservas = session.exec(query).all()
 
-    # Obtener equipos para cada reserva
+    # Obtener equipos para cada reserva y sus detalles
     reservas_public = []
+    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
     for reserva in reservas:
-        equipos = session.exec(
+        equipos_ids = session.exec(
             select(EquiposReservaBase.id_equipo).where(
                 EquiposReservaBase.id_reserva == reserva.id
             )
         ).all()
+        equipos_detalles = []
+        for id_equipo in equipos_ids:
+            try:
+                with httpx.Client() as client:
+                    r = client.get(f"{LABS_URL}{id_equipo}")
+                    if r.status_code == 200:
+                        equipos_detalles.append(r.json())
+            except Exception:
+                pass
         reserva_dict = (
             reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
         )
-        reserva_dict["equipos"] = equipos
+        reserva_dict["equipos"] = equipos_detalles
         reservas_public.append(ReservaPublic(**reserva_dict))
     return reservas_public
 
@@ -96,15 +107,25 @@ def read_reserva(reserva_id: int, session: SessionDep):
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
 
-    equipos = session.exec(
+    equipos_ids = session.exec(
         select(EquiposReservaBase.id_equipo).where(
             EquiposReservaBase.id_reserva == reserva.id
         )
     ).all()
+    equipos_detalles = []
+    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
+    for id_equipo in equipos_ids:
+        try:
+            with httpx.Client() as client:
+                r = client.get(f"{LABS_URL}{id_equipo}")
+                if r.status_code == 200:
+                    equipos_detalles.append(r.json())
+        except Exception:
+            pass
     reserva_dict = (
         reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
     )
-    reserva_dict["equipos"] = equipos
+    reserva_dict["equipos"] = equipos_detalles
     return ReservaPublic(**reserva_dict)
 
 
