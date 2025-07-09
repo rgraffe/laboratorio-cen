@@ -158,7 +158,30 @@ def create_reserva(reserva: ReservaBase, session: SessionDep):
     session.add(db_reserva)
     session.commit()
     session.refresh(db_reserva)
-    return db_reserva
+
+    # Guardar equipos asociados a la reserva
+    equipos_ids = reserva.equipos or []
+    for id_equipo in equipos_ids:
+        if db_reserva.id:
+            equipo_reserva = EquiposReservaBase(
+                id_reserva=db_reserva.id, id_equipo=id_equipo
+            )
+            session.add(equipo_reserva)
+    session.commit()
+
+    # Obtener equipos para la respuesta
+    equipos = session.exec(
+        select(EquiposReservaBase.id_equipo).where(
+            EquiposReservaBase.id_reserva == db_reserva.id
+        )
+    ).all()
+    reserva_dict = (
+        db_reserva.model_dump()
+        if hasattr(db_reserva, "model_dump")
+        else db_reserva.dict()
+    )
+    reserva_dict["equipos"] = equipos
+    return ReservaPublic(**reserva_dict)
 
 
 @app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)
