@@ -6,16 +6,15 @@ services:
     ports:
       - "8001:8000"
     environment:
-      DATABASE_URL: postgresql://user:password@auth-db:5432/authdb
+      DATABASE_URL: postgresql://user:password@db:5432/authdb
     depends_on:
-      - auth-db
-    restart: always
+      - db
     volumes:
       - ./app:/app/app
     networks:
       - auth-network
 
-  auth-db:
+  db:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: user
