@@ -76,7 +76,7 @@ def get_reservas(
 
     # Obtener equipos para cada reserva y sus detalles
     reservas_public = []
-    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
+    LABS_URL = "http://34.75.34.76/api/laboratorios/equipos/"  # Ajusta el puerto/host si es necesario
     for reserva in reservas:
         equipos_ids = session.exec(
             select(EquiposReservaBase.id_equipo).where(
@@ -113,7 +113,7 @@ def read_reserva(reserva_id: int, session: SessionDep):
         )
     ).all()
     equipos_detalles = []
-    LABS_URL = "http://localhost:8002/equipos/"  # Ajusta el puerto/host si es necesario
+    LABS_URL = "http://34.75.34.76/api/laboratorios/equipos/"
     for id_equipo in equipos_ids:
         try:
             with httpx.Client() as client:
