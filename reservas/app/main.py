@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from app.models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
 from app.models.horario_clase import (
     HorarioClase,
@@ -29,6 +30,14 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 # Agrega root_path para que FastAPI sepa que está detrás de un prefijo en el Ingress
 app = FastAPI(root_path="/api/reservas")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
