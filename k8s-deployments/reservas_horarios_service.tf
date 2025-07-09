@@ -2,14 +2,6 @@
 # Despliegue de la Base de Datos PostgreSQL
 # -----------------------------------------------------------
 
-# Define un Namespace específico para la aplicación reservas-horarios y PostgreSQL.
-# Se define aquí para que esté disponible para ambos la base de datos y la app
-resource "kubernetes_namespace" "reservas_horarios_namespace" {
-  metadata {
-    name = "reservas-horarios-app"
-  }
-}
-
 # Paso 1: Definir un PersistentVolumeClaim (PVC) para los datos de la DB
 # Esto solicita almacenamiento persistente a Google Cloud (un Persistent Disk).
 resource "kubernetes_persistent_volume_claim_v1" "postgres_pvc" {
@@ -145,7 +137,7 @@ resource "kubernetes_deployment_v1" "reservas_horarios_deployment" {
         container {
           name  = "reservas-horarios-service"
           # IMPORTANT: Verify this image path and SHA256 matches your pushed image
-          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:17d24a5d4f14bf94cade635a0ca389b55292ee0cdfb13e7ba22482d055ba6794"
+          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:a9c72c2ad8a23117676824ae2935dd5f7711632f825ac1a2daf95c9b1c04a869"
           port {
             container_port = 8000
           }

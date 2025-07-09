@@ -56,7 +56,17 @@ provider "helm" {
   }
 }
 
+# -----------------------------------------------------------
+# Define un Namespace centralizado para todos los microservicios de la aplicación.
+# -----------------------------------------------------------
 
+# Este Namespace alojará los servicios de reservas-horarios, laboratorios y autenticación,
+# incluyendo sus respectivas bases de datos.
+resource "kubernetes_namespace" "reservas_horarios_namespace" {
+  metadata {
+    name = "reservas-horarios-app"
+  }
+}
 # -----------------------------------------------------------
 # Despliegue de Nginx Ingress Controller usando Helm
 # -----------------------------------------------------------
