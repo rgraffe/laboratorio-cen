@@ -18,8 +18,8 @@ from app.db import create_db_and_tables, get_session
 from app.filters import (
     ReservaFilterParams,
     HorarioClaseFilterParams,
-    # SesionClaseFilterParams,
 )
+from app.models.equipos_reserva import EquiposReservaBase
 from app.constants import StatusReserva
 from sqlmodel import select
 from typing import Annotated, List
@@ -72,7 +72,21 @@ def get_reservas(
         query = query.where(Reserva.id_ubicacion == filter_query.id_laboratorio)
 
     reservas = session.exec(query).all()
-    return reservas
+
+    # Obtener equipos para cada reserva
+    reservas_public = []
+    for reserva in reservas:
+        equipos = session.exec(
+            select(EquiposReservaBase.id_equipo).where(
+                EquiposReservaBase.id_reserva == reserva.id
+            )
+        ).all()
+        reserva_dict = (
+            reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
+        )
+        reserva_dict["equipos"] = equipos
+        reservas_public.append(ReservaPublic(**reserva_dict))
+    return reservas_public
 
 
 @app.get("/reservas/{reserva_id}", response_model=ReservaPublic)
@@ -81,7 +95,17 @@ def read_reserva(reserva_id: int, session: SessionDep):
     reserva = session.get(Reserva, reserva_id)
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
-    return reserva
+
+    equipos = session.exec(
+        select(EquiposReservaBase.id_equipo).where(
+            EquiposReservaBase.id_reserva == reserva.id
+        )
+    ).all()
+    reserva_dict = (
+        reserva.model_dump() if hasattr(reserva, "model_dump") else reserva.dict()
+    )
+    reserva_dict["equipos"] = equipos
+    return ReservaPublic(**reserva_dict)
 
 
 @app.post("/reservas/", response_model=ReservaPublic)
