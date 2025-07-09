@@ -5,6 +5,7 @@ from sqlmodel import select
 from typing import Annotated
 from sqlmodel import Session
 from filters import ReservaFilterParams
+from constants import StatusReserva
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -55,11 +56,26 @@ def read_hero(reserva_id: int, session: SessionDep):
 
 @app.post("/reservas/", response_model=ReservaPublic)
 def create_reserva(reserva: ReservaBase, session: SessionDep):
-    """Crear una nueva reserva."""
-    session.add(reserva)
+    """Crear una nueva reserva, evitando colisiones."""
+    # Verificar colisión de reservas
+    colision = session.exec(
+        select(Reserva).where(
+            Reserva.id_ubicacion == reserva.id_ubicacion,
+            Reserva.status == StatusReserva.COMPLETED,
+            Reserva.fecha_inicio < reserva.fecha_fin,
+            Reserva.fecha_fin > reserva.fecha_inicio,
+        )
+    ).first()
+    if colision:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una reserva para ese laboratorio y rango de fechas.",
+        )
+    nueva_reserva = Reserva.model_validate(reserva)
+    session.add(nueva_reserva)
     session.commit()
-    session.refresh(reserva)
-    return reserva
+    session.refresh(nueva_reserva)
+    return nueva_reserva
 
 
 @app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)
