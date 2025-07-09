@@ -38,7 +38,7 @@ def on_startup():
 # --- CRUD para Laboratorios ---
 
 
-@app.post("/laboratorios/", response_model=LaboratorioRead)
+@app.post("/", response_model=LaboratorioRead)
 def create_laboratorio(laboratorio: LaboratorioCreate, session: SessionDep):
     db_laboratorio = Laboratorio.model_validate(laboratorio)
     session.add(db_laboratorio)
@@ -47,7 +47,7 @@ def create_laboratorio(laboratorio: LaboratorioCreate, session: SessionDep):
     return db_laboratorio
 
 
-@app.get("/laboratorios/", response_model=List[LaboratorioRead])
+@app.get("/", response_model=List[LaboratorioRead])
 def get_laboratorios(
     session: SessionDep, filters: Annotated[LaboratorioFilterParams, Depends()]
 ):
@@ -63,7 +63,7 @@ def get_laboratorios(
     return laboratorios
 
 
-@app.get("/laboratorios/{laboratorio_id}", response_model=LaboratorioReadWithEquipos)
+@app.get("/{laboratorio_id}", response_model=LaboratorioReadWithEquipos)
 def get_laboratorio(laboratorio_id: int, session: SessionDep):
     laboratorio = session.get(Laboratorio, laboratorio_id)
     if not laboratorio:
@@ -71,7 +71,7 @@ def get_laboratorio(laboratorio_id: int, session: SessionDep):
     return laboratorio
 
 
-@app.patch("/laboratorios/{laboratorio_id}", response_model=LaboratorioRead)
+@app.patch("/{laboratorio_id}", response_model=LaboratorioRead)
 def update_laboratorio(
     laboratorio_id: int, laboratorio: LaboratorioUpdate, session: SessionDep
 ):
@@ -86,7 +86,7 @@ def update_laboratorio(
     return db_laboratorio
 
 
-@app.delete("/laboratorios/{laboratorio_id}", status_code=204)
+@app.delete("/{laboratorio_id}", status_code=204)
 def delete_laboratorio(laboratorio_id: int, session: SessionDep):
     laboratorio = session.get(Laboratorio, laboratorio_id)
     if not laboratorio:
@@ -124,7 +124,7 @@ def get_equipos(session: SessionDep, filters: Annotated[EquipoFilterParams, Depe
     return equipos
 
 
-@app.get("/equipos/{equipo_id}", response_model=EquipoReadWithLaboratorio)
+@app.get("/laboratorios/equipos/{equipo_id}", response_model=EquipoReadWithLaboratorio)
 def get_equipo(equipo_id: int, session: SessionDep):
     equipo = session.get(Equipo, equipo_id)
     if not equipo:
@@ -132,7 +132,7 @@ def get_equipo(equipo_id: int, session: SessionDep):
     return equipo
 
 
-@app.patch("/equipos/{equipo_id}", response_model=EquipoRead)
+@app.patch("/laboratorios/equipos/{equipo_id}", response_model=EquipoRead)
 def update_equipo(equipo_id: int, equipo: EquipoUpdate, session: SessionDep):
     db_equipo = session.get(Equipo, equipo_id)
     if not db_equipo:
@@ -145,7 +145,7 @@ def update_equipo(equipo_id: int, equipo: EquipoUpdate, session: SessionDep):
     return db_equipo
 
 
-@app.delete("/equipos/{equipo_id}", status_code=204)
+@app.delete("/api/laboratorios/equipos/{equipo_id}", status_code=204)
 def delete_equipo(equipo_id: int, session: SessionDep):
     equipo = session.get(Equipo, equipo_id)
     if not equipo:

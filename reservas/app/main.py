@@ -46,15 +46,15 @@ def on_startup():
     create_db_and_tables()
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# @app.get("/")
+# def read_root():
+#     return {"Hello": "World"}
 
 
 # --- CRUD para Reservas ---
 
 
-@app.get("/reservas/", response_model=list[ReservaPublic])
+@app.get("/", response_model=list[ReservaPublic])
 def get_reservas(
     session: SessionDep, filter_query: Annotated[ReservaFilterParams, Depends()]
 ):
@@ -100,7 +100,7 @@ def get_reservas(
     return reservas_public
 
 
-@app.get("/reservas/{reserva_id}", response_model=ReservaPublic)
+@app.get("/{reserva_id}", response_model=ReservaPublic)
 def read_reserva(reserva_id: int, session: SessionDep):
     """Obtener una reserva por su ID."""
     reserva = session.get(Reserva, reserva_id)
@@ -129,7 +129,7 @@ def read_reserva(reserva_id: int, session: SessionDep):
     return ReservaPublic(**reserva_dict)
 
 
-@app.post("/reservas/", response_model=ReservaPublic)
+@app.post("/", response_model=ReservaPublic)
 def create_reserva(reserva: ReservaBase, session: SessionDep):
     """Crear una nueva reserva."""
     # Validar que no haya un horario de clase conflictivo
@@ -205,7 +205,7 @@ def create_reserva(reserva: ReservaBase, session: SessionDep):
     return ReservaPublic(**reserva_dict)
 
 
-@app.patch("/reservas/{reserva_id}", response_model=ReservaPublic)
+@app.patch("/{reserva_id}", response_model=ReservaPublic)
 def update_reserva(reserva_id: int, reserva: ReservaUpdate, session: SessionDep):
     reserva_db = session.get(Reserva, reserva_id)
     if not reserva_db:
