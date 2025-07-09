@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  laboratorios-app:
+    build: .
+    ports:
+      - "8002:8000"
+    environment:
+      DATABASE_URL: postgresql://user:password@laboratorios-db:5432/laboratorios_db
+    depends_on:
+      - laboratorios-db
+    restart: always
+    volumes:
+      - ./app:/app/app
+    networks:
+      - laboratorios-network
+
+  laboratorios-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: laboratorios_db
+    volumes:
+      - laboratorios_db_data:/var/lib/postgresql/data
+    networks:
+      - laboratorios-network
+
+networks:
+  laboratorios-network:
+    driver: bridge
+
+volumes:
+  laboratorios_db_data:
