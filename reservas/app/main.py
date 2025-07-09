@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Query, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from app.models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
 from app.models.horario_clase import (
     HorarioClase,
@@ -17,8 +17,9 @@ from app.db import create_db_and_tables, get_session
 from app.filters import (
     ReservaFilterParams,
     HorarioClaseFilterParams,
-    SesionClaseFilterParams,
+    # SesionClaseFilterParams,
 )
+from app.constants import StatusReserva
 from sqlmodel import select
 from typing import Annotated, List
 from sqlmodel import Session
@@ -28,6 +29,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 # Agrega root_path para que FastAPI sepa que está detrás de un prefijo en el Ingress
 app = FastAPI(root_path="/api/reservas")
+
 
 @app.on_event("startup")
 def on_startup():
@@ -104,6 +106,21 @@ def create_reserva(reserva: ReservaBase, session: SessionDep):
                 detail=f"El laboratorio está ocupado por una clase en ese horario ({conflicting_schedule.hora_inicio} - {conflicting_schedule.hora_fin}).",
             )
 
+    # Revisar colisiones entre reservas
+    colision = session.exec(
+        select(Reserva).where(
+            Reserva.id_ubicacion == reserva.id_ubicacion,
+            Reserva.status == StatusReserva.COMPLETED,
+            Reserva.fecha_inicio < reserva.fecha_fin,
+            Reserva.fecha_fin > reserva.fecha_inicio,
+        )
+    ).first()
+    if colision:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una reserva para ese laboratorio y rango de fechas.",
+        )
+
     db_reserva = Reserva.model_validate(reserva)
     session.add(db_reserva)
     session.commit()
@@ -163,9 +180,7 @@ def get_horarios_clase(
     return horarios
 
 
-@app.get(
-    "/horarios-clase/{horario_id}", response_model=HorarioClaseReadWithSesiones
-)
+@app.get("/horarios-clase/{horario_id}", response_model=HorarioClaseReadWithSesiones)
 def get_horario_clase(horario_id: int, session: SessionDep):
     horario = session.get(HorarioClase, horario_id)
     if not horario:
@@ -202,9 +217,7 @@ def delete_horario_clase(horario_id: int, session: SessionDep):
 # --- Endpoints para gestionar Sesiones DENTRO de un Horario ---
 
 
-@app.post(
-    "/horarios-clase/{horario_id}/sesiones/", response_model=SesionClaseRead
-)
+@app.post("/horarios-clase/{horario_id}/sesiones/", response_model=SesionClaseRead)
 def add_sesion_to_horario(
     horario_id: int, sesion_data: SesionClaseCreate, session: SessionDep
 ):
