@@ -1,4 +1,18 @@
 # -----------------------------------------------------------
+# ConfigMap para el script de inicialización de la DB de Reservas-Horarios
+# -----------------------------------------------------------
+resource "kubernetes_config_map_v1" "reservas_db_init_script" {
+  metadata {
+    name      = "reservas-db-init-script"
+    namespace = kubernetes_namespace.reservas_horarios_namespace.metadata[0].name
+  }
+  data = {
+    # Asegúrate que el archivo 'initReservas.sql' exista en el mismo directorio que este .tf
+    "init-reservas-db.sql" = file("${path.module}/initReservas.sql")
+  }
+}
+
+# -----------------------------------------------------------
 # Despliegue de la Base de Datos PostgreSQL
 # -----------------------------------------------------------
 
@@ -78,10 +92,18 @@ resource "kubernetes_deployment_v1" "postgres_deployment" {
             claim_name = kubernetes_persistent_volume_claim_v1.postgres_pvc.metadata[0].name
           }
         }
+          # --- Definir el volumen para el ConfigMap ---
+        volume {
+          name = "reservas-db-init-script-volume"
+          config_map {
+            name = kubernetes_config_map_v1.reservas_db_init_script.metadata[0].name
+          }
+        }
       }
     }
   }
-  depends_on = [kubernetes_persistent_volume_claim_v1.postgres_pvc]
+  depends_on = [kubernetes_persistent_volume_claim_v1.postgres_pvc, kubernetes_secret_v1.db_credentials, # Asegúrate de que este Secret esté definido en algún lugar
+    kubernetes_config_map_v1.reservas_db_init_script]
 }
 
 # Paso 3: Crear un Servicio interno para PostgreSQL (kubernetes_service_v1)
@@ -137,7 +159,7 @@ resource "kubernetes_deployment_v1" "reservas_horarios_deployment" {
         container {
           name  = "reservas-horarios-service"
           # IMPORTANT: Verify this image path and SHA256 matches your pushed image
-          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:a9c72c2ad8a23117676824ae2935dd5f7711632f825ac1a2daf95c9b1c04a869"
+          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:e33614eaa22dfa9511f792965de6e79853b0d0357e968c0cb50d0b37015032ca"
           port {
             container_port = 8000
           }

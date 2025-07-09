@@ -49,7 +49,7 @@ provider "kubernetes" {
 provider "helm" {
   # Explicitly configure the Helm provider to use the same credentials as the Kubernetes provider.
   # This ensures it can connect to the GKE cluster to install charts.
-  kubernetes = {
+  kubernetes =  {
     host                   = "https://${data.google_container_cluster.existing_gke_cluster.endpoint}"
     token                  = data.google_client_config.default.access_token
     cluster_ca_certificate = base64decode(data.google_container_cluster.existing_gke_cluster.master_auth[0].cluster_ca_certificate)
