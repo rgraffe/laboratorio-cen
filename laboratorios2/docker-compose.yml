@@ -1,34 +1,44 @@
-version: "3.8"
+version: '3.8' # Versión de Docker Compose (opcional, pero mantenida para consistencia con 'reservas')
 
 services:
+  # Definición del servicio de la aplicación de laboratorios (FastAPI/Python)
   laboratorios-app:
-    build: .
+    build: . # Construye la imagen Docker desde el Dockerfile en el directorio actual
     ports:
-      - "8002:8000"
+      - '8002:8000' # Mapea el puerto 8002 del host al puerto 8000 del contenedor
     environment:
-      DATABASE_URL: postgresql://user:password@laboratorios-db:5432/laboratorios_db
+      # Variable de entorno para la URL de conexión a la base de datos.
+      # Apunta al servicio de la base de datos llamado 'db' dentro de la red Docker Compose.
+      DATABASE_URL: postgresql://user:password@db:5432/laboratorios_db
     depends_on:
-      - laboratorios-db
-    restart: always
+      # Declara una dependencia del servicio 'db' para asegurar que la DB se inicie primero
+      - db
     volumes:
+      # Monta el código fuente local en el contenedor para facilitar el desarrollo
       - ./app:/app/app
     networks:
-      - laboratorios-network
+      - laboratorios-network # Asigna el servicio a la red definida
 
-  laboratorios-db:
-    image: postgres:15-alpine
+  # Definición del servicio de la base de datos PostgreSQL
+  # CAMBIO: El servicio de la base de datos ahora se llama 'db' (consistente con 'reservas')
+  db:
+    image: postgres:15-alpine # Utiliza la imagen oficial de PostgreSQL
     environment:
+      # Variables de entorno para la inicialización y configuración de PostgreSQL
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: laboratorios_db
     volumes:
+      # Monta un volumen persistente para los datos de la base de datos
       - laboratorios_db_data:/var/lib/postgresql/data
     networks:
-      - laboratorios-network
+      - laboratorios-network # Asigna el servicio a la red definida
 
+# Definición de las redes para la comunicación entre servicios
 networks:
   laboratorios-network:
-    driver: bridge
+    driver: bridge # Tipo de red por defecto para Docker Compose
 
+# Definición de los volúmenes para la persistencia de datos
 volumes:
-  laboratorios_db_data:
+  laboratorios_db_data: # Volumen nombrado para los datos de PostgreSQL
