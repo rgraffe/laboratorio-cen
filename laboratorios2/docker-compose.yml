@@ -9,7 +9,6 @@ services:
       DATABASE_URL: postgresql://user:password@laboratorios-db:5432/laboratorios_db
     depends_on:
       - laboratorios-db
-    restart: always
     volumes:
       - ./app:/app/app
     networks:
