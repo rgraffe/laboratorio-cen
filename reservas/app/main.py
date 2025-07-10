@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.models.reserva import Reserva, ReservaPublic, ReservaBase, ReservaUpdate
+from app.models.reserva import Reserva, ReservaPublic, CreateReserva, ReservaUpdate
 from app.models.horario_clase import (
     HorarioClase,
     HorarioClaseCreate,
@@ -13,6 +13,7 @@ from app.models.horario_clase import (
     SesionClaseUpdate,
     DiaSemana,
     EstadoSesion,
+
 )
 from app.db import create_db_and_tables, get_session
 from app.filters import (
@@ -130,7 +131,7 @@ def read_reserva(reserva_id: int, session: SessionDep):
 
 
 @app.post("/", response_model=ReservaPublic)
-def create_reserva(reserva: ReservaBase, session: SessionDep):
+def create_reserva(reserva: CreateReserva, session: SessionDep):
     """Crear una nueva reserva."""
     # Validar que no haya un horario de clase conflictivo
     dias_semana_map = {

@@ -17,6 +17,10 @@ class ReservaBase(SQLModel):
 class Reserva(ReservaBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
 
+class CreateReserva(ReservaBase):
+    id: None = None
+    equipos: Optional[list[int]] = None
+
 
 class ReservaPublic(ReservaBase):
     id: int
