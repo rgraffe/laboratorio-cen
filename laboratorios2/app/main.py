@@ -124,7 +124,7 @@ def get_equipos(session: SessionDep, filters: Annotated[EquipoFilterParams, Depe
     return equipos
 
 
-@app.get("/laboratorios/equipos/{equipo_id}", response_model=EquipoReadWithLaboratorio)
+@app.get("/equipos/{equipo_id}", response_model=EquipoReadWithLaboratorio)
 def get_equipo(equipo_id: int, session: SessionDep):
     equipo = session.get(Equipo, equipo_id)
     if not equipo:
@@ -132,7 +132,7 @@ def get_equipo(equipo_id: int, session: SessionDep):
     return equipo
 
 
-@app.patch("/laboratorios/equipos/{equipo_id}", response_model=EquipoRead)
+@app.patch("/equipos/{equipo_id}", response_model=EquipoRead)
 def update_equipo(equipo_id: int, equipo: EquipoUpdate, session: SessionDep):
     db_equipo = session.get(Equipo, equipo_id)
     if not db_equipo:
@@ -145,7 +145,7 @@ def update_equipo(equipo_id: int, equipo: EquipoUpdate, session: SessionDep):
     return db_equipo
 
 
-@app.delete("/api/laboratorios/equipos/{equipo_id}", status_code=204)
+@app.delete("/equipos/{equipo_id}", status_code=204)
 def delete_equipo(equipo_id: int, session: SessionDep):
     equipo = session.get(Equipo, equipo_id)
     if not equipo:
