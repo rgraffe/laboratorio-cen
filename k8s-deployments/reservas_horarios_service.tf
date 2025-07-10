@@ -159,7 +159,7 @@ resource "kubernetes_deployment_v1" "reservas_horarios_deployment" {
         container {
           name  = "reservas-horarios-service"
           # IMPORTANT: Verify this image path and SHA256 matches your pushed image
-          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:88bcaf52c98127783d1243e5e6a224aff1eca8770f7b35cf3073c6d5ad32febb"
+          image = "us-east1-docker.pkg.dev/lab-reservations-465014/reservas-repo/reservas-horarios@sha256:02141c5227df3d2f13604e7bb393efe61326b51fc91cef2fb1a74bd15d3ccae2"
           port {
             container_port = 8000
           }
