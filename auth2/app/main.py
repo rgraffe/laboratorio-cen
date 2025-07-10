@@ -118,3 +118,12 @@ def get_users(session: Session = Depends(get_session)):
         UserOut(id=u.id, email=u.email, name=u.name, type=u.type) for u in users_db
     ]
     return users
+
+@app.delete("/users/{user_id}", status_code=204)
+def delete_user(user_id: int, session: Session = Depends(get_session)):
+    user_db = session.get(UserDB, user_id)
+    if not user_db:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(user_db)
+    session.commit()
+    return
