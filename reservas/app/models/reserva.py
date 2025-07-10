@@ -27,11 +27,5 @@ class ReservaPublic(ReservaBase):
     equipos: Optional[list] = None
 
 
-class ReservaUpdate(ReservaBase):
-    id: int
-    fecha_creacion: None = None
-    fecha_inicio: datetime | None = None
-    fecha_fin: datetime | None = None
-    id_usuario: None = None
-    id_ubicacion: None = None
-    status: str | None = None
+class ReservaUpdate(SQLModel):
+    status: str

@@ -211,13 +211,11 @@ def update_reserva(reserva_id: int, reserva: ReservaUpdate, session: SessionDep)
     reserva_db = session.get(Reserva, reserva_id)
     if not reserva_db:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
-    reserva_data = reserva.model_dump(exclude_unset=True)
-    reserva_db.sqlmodel_update(reserva_data)
+    reserva_db.status = reserva.status
     session.add(reserva_db)
     session.commit()
     session.refresh(reserva_db)
     return reserva_db
-
 
 # --- CRUD para HorarioClase ---
 
