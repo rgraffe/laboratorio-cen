@@ -16,7 +16,7 @@ provider "google" {
 terraform {
   backend "gcs" {
     bucket = "terraform-state-reservas-ucab-sahili"
-    prefix = "terraform/state/gke-infra" # <--- IMPORTANT: Change prefix for this state file
+    prefix = "terraform/state/gke-infra" 
   }
 }
 
@@ -33,7 +33,7 @@ resource "google_compute_network" "lab_reservations_vpc" {
 # -----------------------------------------------------------
 resource "google_container_cluster" "primary_gke_cluster" {
   name     = "lab-reservations-cluster"
-  location = "us-east1-c" # <--- Ensure this is your desired new zone
+  location = "us-east1-c" 
 
   initial_node_count = 1
   remove_default_node_pool = true
@@ -57,7 +57,7 @@ resource "google_container_cluster" "primary_gke_cluster" {
 # -----------------------------------------------------------
 resource "google_container_node_pool" "default_node_pool" {
   name       = "default-node-pool"
-  location = "us-east1-c" # <--- Must match cluster location for zonal
+  location = "us-east1-c" 
   cluster    = google_container_cluster.primary_gke_cluster.name
   node_count = 1
 
