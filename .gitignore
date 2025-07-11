@@ -21,3 +21,5 @@
 !/k8s-deployments/ingress.tf
 !/k8s-deployments/main.tf
 !/k8s-deployments/reservas_horarios_service.tf
+!/k8s-deployments/auth_service.tf
+!/k8s-deployments/laboratorios_service.tf
